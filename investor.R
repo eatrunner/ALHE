@@ -1,11 +1,14 @@
+
 evaluate <- function(K, invest, maxima, price)
 {
-	sum = 0
 	i = 2
+	# mnożnik {1, -1} w zależności czy posiadamy USD czy PLN
+	j = -1
 	while (i <= length(invest))
 	{
-		K = K + (price[maxima[i]] - price[maxima[i-1]]) * K
+		K = K + j*(price[maxima[invest[i]]] - price[maxima[invest[i-1]]]) * K
 		i = i+1
+		j = -1*j
 	}
 	return(K)
 }
