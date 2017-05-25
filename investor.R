@@ -1,11 +1,46 @@
+evaluate <- function(K, invest, maxima, price)
+{
+	sum = 0
+	i = 2
+	while (i <= length(invest))
+	{
+		K = K + (price[maxima[i]] - price[maxima[i-1]]) * K
+		i = i+1
+	}
+	return(K)
+}
+N <- 100
+K <- 100
+
 data <- read.csv("Parsed_file.csv")
 # jpeg(file = "line_chart_label_colored.jpg")
 X11()
-plot(data$val1,type = 'p', col = 'black', xlab = "Time", ylab = "EUR/USD")
-stock <- data$val1
-
-maxima = which(diff(sign(diff(data$val1)))==-2)+1
+plot(data$price,type = 'l', col = 'black', xlab = "Time", ylab = "EUR/USD")
+print(length(data$price))
+maxima = which(diff(sign(diff(data$price)))==-2)+1
 X11()
-plot(maxima, data$val1[maxima], type = 'p', col = 'black', xlab = "Time", ylab = "EUR/USD")
+plot(maxima, data$price[maxima], type = 'l', col = 'black', xlab = "Time", ylab = "EUR/USD")
+print(length(maxima))
+print(length(maxima)/length(data$price))
+
+# Niewięcej transakcji niz maximów
+if (length(maxima) < N)
+{
+	N <- length(maxima)
+}
+
+# Parzysta ilosc transakcji
+if (N%%2 == 1)
+{
+	N <- N - 1
+}
+
+invest <- 1:N
+
+
+print(evaluate(K, invest, maxima, data$price))
+
+lines(maxima[invest], data$price[maxima[invest]], type = 'p', col = 'red', xlab = "Time", ylab = "EUR/USD")
+
 
 Sys.sleep(60)
