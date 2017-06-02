@@ -1,49 +1,60 @@
 
-evaluate <- function(K, invest, maxima, price)
+evaluate <- function(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
 {
-	i = 2
-	# mnożnik {1, -1} w zależności czy posiadamy USD czy PLN
-	j = -1
-	while (i <= length(invest))
+	for(i in 1:length(invest$B))
 	{
-		K = K + j*(price[maxima[invest[i]]] - price[maxima[invest[i-1]]]) * K
-		i = i+1
-		j = -1*j
+	  K = K + K*switch(
+	    invest$EX[i],
+	    abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
+	    abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
+	    abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
+	  )
 	}
 	return(K)
 }
 N <- 100
 K <- 100
 
-data <- read.csv("Parsed_file.csv")
-# jpeg(file = "line_chart_label_colored.jpg")
-X11()
-plot(data$price,type = 'l', col = 'black', xlab = "Time", ylab = "EUR/USD")
+EURPLN <- read.csv("EURPLN2016.csv")
+EURUSD <- read.csv("EURUSD2016.csv")
+USDPLN <- read.csv("USDPLN2016.csv")
+
+plot(EURUSD$price,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
+par(new=TRUE)
+plot(EURPLN$price, type = 'l', col = 'blue', xlab = "Time", ylab = "EXCH")
+par(new=TRUE)
+plot(USDPLN$price, type = 'l', col = 'red', xlab = "Time", ylab = "EXCH")
+
 print(length(data$price))
-maxima = which(diff(sign(diff(data$price)))==-2)+1
-X11()
-plot(maxima, data$price[maxima], type = 'l', col = 'black', xlab = "Time", ylab = "EUR/USD")
-print(length(maxima))
-print(length(maxima)/length(data$price))
+maxEURUSD = which(diff(sign(diff(EURUSD$price)))==-2)+1
+maxEURPLN = which(diff(sign(diff(EURPLN$price)))==-2)+1
+maxUSDPLN = which(diff(sign(diff(USDPLN$price)))==-2)+1
+plot(maxEURUSD, EURUSD$price[maxEURUSD], type = 'l', col = 'black', xlab = "Maxima", ylab = "EXCH")
+par(new=TRUE)
+plot(maxEURPLN, EURPLN$price[maxEURPLN], type = 'l', col = 'blue', xlab = "Maxima", ylab = "EXCH")
+par(new=TRUE)
+plot(maxUSDPLN, USDPLN$price[maxUSDPLN], type = 'l', col = 'red', xlab = "Maxima", ylab = "EXCH")
+
 
 # Niewięcej transakcji niz maximów
-if (length(maxima) < N)
+if (2*length(maxEURUSD) < N)
 {
-	N <- length(maxima)
+	N = as.integer(length(maxEURUSD)/2)
+}
+if (2*length(maxEURPLN) < N)
+{
+  N = as.integer(length(maxEURPLN)/2)
+}
+if (2*length(maxUSDPLN) < N)
+{
+  N = as.integer(length(maxUSDPLN)/2)
 }
 
-# Parzysta ilosc transakcji
-if (N%%2 == 1)
-{
-	N <- N - 1
-}
 
-invest <- 1:N
+invest <- data.frame(
+  B = seq(1, 2*N, 2), 
+  E = seq(2, 2*N + 1, 2), 
+  EX = rep(1, N)
+  )
 
-
-print(evaluate(K, invest, maxima, data$price))
-
-lines(maxima[invest], data$price[maxima[invest]], type = 'p', col = 'red', xlab = "Time", ylab = "EUR/USD")
-
-
-Sys.sleep(60)
+print(evaluate(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price, EURPLN$price, USDPLN$price))
