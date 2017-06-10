@@ -17,7 +17,7 @@ evaluate <- function(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, pr
 }
 mutation <- function(invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
 {
-  sd1 = 1
+  sd1 = 10
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B))
@@ -25,32 +25,31 @@ mutation <- function(invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSD
     i
     if(runif(1) < pB)
     {
-      while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) > max || (tmp = as.integer(rnorm(1, invest$B[i], sd1))) < min ){next}
-    
+      while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) > max || tmp < min || tmp >= invest$E[i]){next}
+      
       invest$B[i] = tmp
     }
     if(runif(1) < pE)
     {
-      while( (tmp = as.integer(rnorm(1, invest$E[i], sd1))) > max || (tmp = as.integer(rnorm(1, invest$E[i], sd1))) < min ){next}
-             
+      while( (tmp = as.integer(rnorm(1, invest$E[i], sd1))) > max || tmp  < min || tmp <= invest$B[i]){next}
       invest$E[i] = tmp
     }
     if(runif(1) < pEX)
     {
-      while( (tmp = as.integer(rnorm(1, invest$EX[i], sd2))) > 3 || (tmp = as.integer(rnorm(1, invest$EX[i], sd2))) < 1 ){next}
+      while( (tmp = as.integer(rnorm(1, invest$EX[i], sd2))) > 3 || tmp < 1 ){next}
       
       invest$EX[i] = tmp
     }
     #sprawdzanie poprawnosci wyniku i korygowanie
     if(i > 1 && invest$B[i] < invest$E[i-1])
     {
-      val1 = switch(
+      val1 <- switch(
         invest$EX[i-1],
         abs(priceEURUSD[maxEURUSD[invest$E[i-1]]] - priceEURUSD[maxEURUSD[invest$B[i-1]]]),
         abs(priceEURPLN[maxEURPLN[invest$E[i-1]]] - priceEURPLN[maxEURPLN[invest$B[i-1]]]),
         abs(priceUSDPLN[maxUSDPLN[invest$E[i-1]]] - priceUSDPLN[maxUSDPLN[invest$B[i-1]]])
       )
-      val2 = switch(
+      val2 <- switch(
         invest$EX[i],
         abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
         abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
@@ -61,29 +60,29 @@ mutation <- function(invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSD
         invest$B[i] = invest$E[i-1];
       }else
       {
-         invest$E[i-1] = invest$B[i];
+        invest$E[i-1] = invest$B[i];
       }
     }
     if(i < length(invest$B) && invest$E[i] > invest$B[i+1])
     {
-      val1 = switch(
+      val1 <- switch(
         invest$EX[i],
         abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
         abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
         abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
       )
-      val2 = switch(
-        invest$EX[i],
+      val2 <- switch(
+        invest$EX[i+1],
         abs(priceEURUSD[maxEURUSD[invest$E[i+1]]] - priceEURUSD[maxEURUSD[invest$B[i+1]]]),
         abs(priceEURPLN[maxEURPLN[invest$E[i+1]]] - priceEURPLN[maxEURPLN[invest$B[i+1]]]),
         abs(priceUSDPLN[maxUSDPLN[invest$E[i+1]]] - priceUSDPLN[maxUSDPLN[invest$B[i+1]]])
       )
       if (val1 < val2)
       {
-         invest$E[i] = invest$B[i+1];
+         invest$B[i+1] = invest$E[i];
       }else
       {
-        invest$B[i+1] = invest$E[i];
+        invest$E[i] = invest$B[i+1];
       }
       i
     }
@@ -149,16 +148,22 @@ if (2*length(maxUSDPLN) < N)
 
 
 invest <- data.frame(
-  B = seq(1, 2*N, 2), 
-  E = seq(2, 2*N + 1, 2), 
+  B = seq(1, 50*N, 50),
+  E = seq(6, 50*N + 5, 50),
   EX = rep(1, N)
   )
 
 
 print(evaluate(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
-plot(invest$B, type = 'l', col = 'red', xlab = "Maxima", ylab = "EXCH")
 
-  invest <- mutation(invest, 0.1, 0.1, 0.1, 1, length(maxEURUSD), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
+for(i in 1:30)
+{
+  invest <- mutation(invest, 0.5, 0.5, 0.1, 1, length(maxEURPLN), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
+}
+plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
+par(new=TRUE)
+plot(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH")
 
-plot(invest$B, type = 'l', col = 'red', xlab = "Maxima", ylab = "EXCH")
+
+print(evaluate(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
 
