@@ -86,6 +86,20 @@ select.one.of.two <- function(population,K,prices) {
 invests.selection1 <- function(population,K,prices){
   lapply(1:length(population), function(i) select.one.of.two(population,K,prices))
 }
+select.one.of.two2 <- function(population,K,prices,fits) {
+  ind <- sample(1:length(population),2)
+  f1 <- fits[ind[1]]
+  f2 <- fits[ind[2]]
+  ifelse(f1 > f2, population[ind[1]],population[ind[2]])[[1]]
+}
+invests.selection2 <- function(population,K,prices){
+  fits <- sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices))
+  best <- pop[[which.max(fits)]]
+  pop <- lapply(1:length(population)-1, function(i) select.one.of.two2(population,K,prices,fits))
+  pop[[10]] <- best
+  return(pop)
+}
+
 
 generate.invidual <- function(ticks.number, trans.number) {
   pos <- tibble( i = 1:(2*trans.number) ,p = sort(sample(1:ticks.number,size = 2 * trans.number)))
@@ -200,7 +214,7 @@ maxiter <- 100
 pmutation <- 0.9
 
 #wlasciwa petla ewolucji
-selection <- invests.selection1
+selection <- invests.selection2
 pop <- basePopulation(ticks.number,trans.number,popSize)
 
 invest <- pop[[1]]
