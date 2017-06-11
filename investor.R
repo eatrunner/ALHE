@@ -116,7 +116,7 @@ EURPLN <- read_csv("DAT_MT_EURPLN_M1_2016.csv",
                                                        X2 = col_time(format = "%H:%M"), 
                                                        X7 = col_skip()))
 colnames(EURPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-EURPLN <- EURPLN %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+EURPLN <- EURPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
 EURPLN$date <- NULL
 
 EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv", 
@@ -124,7 +124,7 @@ EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv",
                                                        X2 = col_time(format = "%H:%M"), 
                                                        X7 = col_skip()))
 colnames(EURUSD) <- c("date", "time", "price1", "price2", "price3","price4")
-EURUSD <- EURUSD %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+EURUSD <- EURUSD %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
 EURUSD$date <- NULL
 
 USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv", 
@@ -132,7 +132,7 @@ USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv",
                                                        X2 = col_time(format = "%H:%M"), 
                                                        X7 = col_skip()))
 colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-USDPLN <- USDPLN %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+USDPLN <- USDPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
 USDPLN$date <- NULL
 
 a <- USDPLN[,1:2]
