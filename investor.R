@@ -156,18 +156,6 @@ plot(EURPLN$time, EURPLN$price1, type = 'l', col = 'blue', xlab = "Time", ylab =
 par(new=TRUE)
 plot(USDPLN$time, USDPLN$price1, type = 'l', col = 'red', xlab = "Time", ylab = "EXCH")
 
-# Niewięcej transakcji niz maximów
-if (2*length(maxEURUSD) < N){
-	N = as.integer(length(maxEURUSD)/2)
-}
-if (2*length(maxEURPLN) < N){
-  N = as.integer(length(maxEURPLN)/2)
-}
-if (2*length(maxUSDPLN) < N){
-  N = as.integer(length(maxUSDPLN)/2)
-}
-
-
 invest <- data.frame(
   B = seq(1, 50*N, 50),
   E = seq(6, 50*N + 5, 50),
@@ -186,15 +174,6 @@ points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak
 
 print(evaluate(invest, K, prices))
 
-
-basePopulation <- function(ga , nrows, transnumber) {
-  N <- 10 #ga@popSize
-  pos <- tibble( i = 1:(2*transnumber) ,p = sort(sample(1:nrows,size = 2 * transnumber)))
-  p <- pos %>% filter(i %% 2 == 1)
-  k <- pos %>% filter(i %% 2 == 0)
-  data.frame(B = p$p, E = k$p, EX = sample(1:3,transnumber,replace = TRUE))
-}
-
 pB <- 0.5
 pE <- 0.5
 pEX <- 0.1
@@ -204,13 +183,33 @@ popSize <- 10
 maxiter <- 1000
 pmutation <- 0.9
 pcrossover <- 0
+ticks.number <- nrow(prices)
+trans.number <- N
+
+generate.invidual <- function(ticks.number, trans.number) {
+  pos <- tibble( i = 1:(2*trans.number) ,p = sort(sample(1:ticks.number,size = 2 * trans.number)))
+  p <- pos %>% filter(i %% 2 == 1)
+  k <- pos %>% filter(i %% 2 == 0)
+  data.frame(B = p$p, E = k$p, EX = sample(1:3,trans.number,replace = TRUE))
+}
+
+basePopulation <- function(ga , ticks.number, trans.number) {
+  N <-  ga@popSize
+  
+  bp <- replicate(N,  generate.invidual(ticks.number,trans.number),simplify = FALSE)
+  return(bp)
+}
+
+bp <- basePopulation(NULL,ticks.number,N)
+#evaluate(bp[,2],K,prices)
 ga(type = "real-valued", 
    fitness = function (invest) -1*evaluate(invest, K, prices),
    min = 0,
    max = Inf, #może trzeba zmienić na jakieś rep(Inf, N)
    popSize = popSize,
    maxiter = maxiter,
-   population = function(ga) basePopulation(ga), 
+   population = function(ga) basePopulation(ga, ticks.number, N), 
    mutation = function(ga, invest) invest_mutation(ga, invest, pB, pE, pEX, min, max, prices),
    pmutation = pmutation, 
    pcrossover = pcrossover)
+  
