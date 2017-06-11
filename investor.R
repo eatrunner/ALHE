@@ -3,8 +3,8 @@ library(readr)
 library(GA)
 
 evaluate <- function(invest, K, prices){
-	for(i in 1:length(invest$B))
-	{
+  
+	for(i in 1:length(invest$B)){
 	  K = K + K*switch(
 	    invest$EX[i],
 	    abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]])*prices$USDPLN[invest$B[i]],#Bo zysk jest w zloty
@@ -16,30 +16,25 @@ evaluate <- function(invest, K, prices){
 	return(K)
 }
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
-  sd1 = 10
+  sd1 = 500
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B)){
-    if(runif(1) < pB)
-    {
+    if(runif(1) < pB){
       while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) > max || tmp < min || tmp >= invest$E[i]){next}
-      
       invest$B[i] = tmp
     }
-    if(runif(1) < pE)
-    {
+    if(runif(1) < pE) {
       while( (tmp = as.integer(rnorm(1, invest$E[i], sd1))) > max || tmp  < min || tmp <= invest$B[i]){next}
       invest$E[i] = tmp
     }
-    if(runif(1) < pEX)
-    {
+    if(runif(1) < pEX){
       while( (tmp = as.integer(rnorm(1, invest$EX[i], sd2))) > 3 || tmp < 1 ){next}
       
       invest$EX[i] = tmp
     }
     #sprawdzanie poprawnosci wyniku i korygowanie
-    if(i > 1 && invest$B[i] < invest$E[i-1])
-    {
+    if(i > 1 && invest$B[i] < invest$E[i-1]){
       val1 <- switch(
         invest$EX[i-1],
         abs(prices$EURUSD[invest$E[i-1]] - prices$EURUSD[invest$B[i-1]]),
@@ -52,16 +47,13 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
         abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
         abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
       )
-      if (val1 > val2)
-      {
+      if (val1 > val2){
         invest$B[i] = invest$E[i-1];
-      }else
-      {
+      }else{
         invest$E[i-1] = invest$B[i];
       }
     }
-    if(i < length(invest$B) && invest$E[i] > invest$B[i+1])
-    {
+    if(i < length(invest$B) && invest$E[i] > invest$B[i+1]){
       val1 <- switch(
         invest$EX[i],
         abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]]),
@@ -74,11 +66,9 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
         abs(prices$EURPLN[invest$E[i+1]] - prices$EURPLN[invest$B[i+1]]),
         abs(prices$USDPLN[invest$E[i+1]] - prices$USDPLN[invest$B[i+1]])
       )
-      if (val1 < val2)
-      {
+      if (val1 < val2){
          invest$B[i+1] = invest$E[i];
-      }else
-      {
+      }else{
         invest$E[i] = invest$B[i+1];
       }
     }
@@ -196,7 +186,7 @@ prices <- load.data()
 
 
 N <- 100
-K <- 100
+K <- 50
 ticks.number <- nrow(prices)
 trans.number <- N
 
@@ -206,7 +196,7 @@ pEX <- 0.1
 min <-  1
 max <- length(prices$time)
 popSize <- 10
-maxiter <- 10
+maxiter <- 100
 pmutation <- 0.9
 
 #wlasciwa petla ewolucji
@@ -214,15 +204,18 @@ selection <- invests.selection1
 pop <- basePopulation(ticks.number,trans.number,popSize)
 
 invest <- pop[[1]]
-
+mval <- 0
 for(i in 1:maxiter){
   pop <- selection(pop,K,prices)
   pop <- lapply(1:popSize , function(j)invest_mutation(pop[[j]], pB, pE, pEX, min, max,prices))
+  mval[i] <- max(sapply(1:popSize,function(j) evaluate(pop[[j]],K,prices)))
+  #best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
+  print(i)
 }
-
+plot(1:maxiter,mval)
 #wybor najlepszego
 
-best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
+
 
 plot(best$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
 points(best$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
