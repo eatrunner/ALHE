@@ -201,14 +201,31 @@ basePopulation <- function(ticks.number, trans.number,pop.size) {
 
 bp <- basePopulation(ticks.number,trans.number)
 
-ga(type = "real-valued", 
-   fitness = function (invest) -1*evaluate(invest, K, prices),
-   min = c(0,0,0),
-   max = c(Inf,Inf,Inf), #może trzeba zmienić na jakieś rep(Inf, N)
-   popSize = popSize,
-   maxiter = maxiter,
-   population = function(ga) basePopulation(ga, ticks.number, N), 
-   mutation = function(ga, invest) invest_mutation(ga, invest, pB, pE, pEX, min, max, prices),
-   pmutation = pmutation, 
-   pcrossover = pcrossover)
-  
+pop <- bp
+#wlasciwa petla ewolucji
+for(i in 1:maxiter)
+{
+  pop <- selection(pop)
+  #mutacja
+  for(j in 1:popSize)
+  {
+    pop[j]<-mutation(pop[j], pB, pE, pEX, min, max,prices)
+  }
+}
+
+#wybor najlepszego
+best <- pop[1]
+bestVal<- evaluate(K, best, prices)
+for(i in 2:popSize)
+{
+  if(evaluate(K, pop[i], prices) > bestVal)
+  {
+    best <- pop[i]
+    bestVal<- evaluate(K, best, prices)
+  }
+}
+plot(best$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
+points(best$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
+print(bestVal)
+
+
