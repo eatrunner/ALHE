@@ -89,6 +89,16 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   return (invest)
 }
 
+select.one.of.two <- function(population,K,prices) {
+  ind <- sample(1:length(population),2)
+  f1 <- evaluate(population[[ind[1]]],K,prices)
+  f2 <- evaluate(population[[ind[2]]],K,prices)
+  ifelse(f1 > f2, population[ind[[1]]],population[[ind[2]]])[[1]]
+}
+invests.selection1 <- function(population,K,prices){
+  lapply(1:length(population), function(i) select.one.of.two(population,K,prices))
+}
+
 replace.na <- function(dat) {
   N <- length(dat)
   na.pos <- which(is.na(dat))
@@ -195,7 +205,7 @@ generate.invidual <- function(ticks.number, trans.number) {
 
 basePopulation <- function(ticks.number, trans.number,pop.size) {
   N <- pop.Size
-  bp <- lapply(1:N , function(i)generate.invidual(ticks.number,trans.number))
+  bp <- lapply(1:N , function(i) generate.invidual(ticks.number,trans.number))
   return(bp)
 }
 
