@@ -3,7 +3,6 @@ library(readr)
 library(GA)
 
 evaluate <- function(invest, K, prices){
-  
 	for(i in 1:length(invest$B)){
 	  K = K + K*switch(
 	    invest$EX[i],
@@ -11,7 +10,6 @@ evaluate <- function(invest, K, prices){
 	    abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
 	    abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
 	  )
-	  
 	}
 	return(K)
 }
@@ -78,6 +76,7 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
 }
 
 select.one.of.two <- function(population,K,prices) {
+
   ind <- sample(1:length(population),2)
   f1 <- evaluate(population[[ind[1]]],K,prices)
   f2 <- evaluate(population[[ind[2]]],K,prices)
@@ -87,10 +86,10 @@ invests.selection1 <- function(population,K,prices){
   lapply(1:length(population), function(i) select.one.of.two(population,K,prices))
 }
 select.one.of.two2 <- function(population,K,prices,fits) {
-  ind <- sample(1:length(population),2)
-  f1 <- fits[ind[1]]
-  f2 <- fits[ind[2]]
-  ifelse(f1 > f2, population[ind[1]],population[ind[2]])[[1]]
+  n <- 4
+  ind <- sample(1:length(population),n)
+  ma <- sapply(ind,function(i) fits[i])
+  population[[ind[which.max(ma)]]]
 }
 invests.selection2 <- function(population,K,prices){
   fits <- sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices))
@@ -210,25 +209,27 @@ pEX <- 0.1
 min <-  1
 max <- length(prices$time)
 popSize <- 10
-maxiter <- 100
+maxiter <- 1000
 pmutation <- 0.9
 
 #wlasciwa petla ewolucji
 selection <- invests.selection2
-pop <- basePopulation(ticks.number,trans.number,popSize)
+
 
 invest <- pop[[1]]
 mval <- 0
+pop <- basePopulation(ticks.number,trans.number,popSize)
 for(i in 1:maxiter){
   pop <- selection(pop,K,prices)
-  pop <- lapply(1:popSize , function(j)invest_mutation(pop[[j]], pB, pE, pEX, min, max,prices))
+  best.prv <- pop[[10]]
+  pop <- lapply(1:(popSize - 1) , function(j)invest_mutation(pop[[j]], pB, pE, pEX, min, max,prices))
+  pop[[10]] <- best.prv
   mval[i] <- max(sapply(1:popSize,function(j) evaluate(pop[[j]],K,prices)))
   #best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
   print(i)
+  if(i%%50==0) plot(mval, xlab="Iteracja",ylab="Stan konta u najlepszego osobnika",col="royalblue1",pch=16)
 }
-plot(1:maxiter,mval)
-#wybor najlepszego
-
+plot(mval, xlab="Iteracja",ylab="Stan konta u najlepszego osobnika",col="royalblue1",pch=16)
 
 
 plot(best$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
