@@ -15,7 +15,7 @@ evaluate <- function(invest, K, prices){
 	}
 	return(K)
 }
-invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, prices){
+invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   sd1 = 10
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
@@ -193,15 +193,13 @@ generate.invidual <- function(ticks.number, trans.number) {
   data.frame(B = p$p, E = k$p, EX = sample(1:3,trans.number,replace = TRUE))
 }
 
-basePopulation <- function(ga , ticks.number, trans.number) {
-  N <- 10#ga@popSize
-  
+basePopulation <- function(ticks.number, trans.number,pop.size) {
+  N <- pop.Size
   bp <- lapply(1:N , function(i)generate.invidual(ticks.number,trans.number))
-  #ambp <- as.matrix(bp,ncol=1,nrow=N)
   return(bp)
 }
 
-bp <- basePopulation(NULL,ticks.number,trans.number)
+bp <- basePopulation(ticks.number,trans.number)
 
 ga(type = "real-valued", 
    fitness = function (invest) -1*evaluate(invest, K, prices),
