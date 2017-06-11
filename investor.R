@@ -15,7 +15,6 @@ evaluate <- function(invest, K, prices){
 	}
 	return(K)
 }
-invest = pop[[2]]
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   sd1 = 10
   sd2 = 1
@@ -187,7 +186,7 @@ load.data <- function() {
 #print(evaluate(invest, K,prices))
 
 #for(i in 1:30){
-  invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(prices$time), prices)
+ # invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(prices$time), prices)
 }
 {
 #plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
