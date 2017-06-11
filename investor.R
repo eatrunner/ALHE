@@ -201,6 +201,7 @@ basePopulation <- function(ga , nrows, transnumber) {
   p <- pos %>% filter(i %% 2 == 1)
   k <- pos %>% filter(i %% 2 == 0)
   data.frame(B = p$p, E = k$p, EX = sample(1:3,transnumber,replace = TRUE))
+  
 }
 
 pB <- 0.5
