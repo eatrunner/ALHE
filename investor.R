@@ -169,7 +169,7 @@ load.data <- function() {
     mutate(EURUSD = replace.na(EURUSD))
   return(prices)
 }
-#prices <- load.data()
+prices <- load.data()
 
 {
 #plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
