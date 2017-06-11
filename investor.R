@@ -7,7 +7,7 @@ evaluate <- function(invest, K, prices){
 	{
 	  K = K + K*switch(
 	    invest$EX[i],
-	    abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]]),
+	    abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]])*prices$USDPLN[invest$B[i]],#Bo zysk jest w zloty
 	    abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
 	    abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
 	  )
@@ -155,15 +155,6 @@ plot(EURPLN$time, EURPLN$price1, type = 'l', col = 'blue', xlab = "Time", ylab =
 par(new=TRUE)
 plot(USDPLN$time, USDPLN$price1, type = 'l', col = 'red', xlab = "Time", ylab = "EXCH")
 
-maxEURUSD = which(diff(sign(diff(EURUSD$price1)))==-2)+1
-maxEURPLN = which(diff(sign(diff(EURPLN$price1)))==-2)+1
-maxUSDPLN = which(diff(sign(diff(USDPLN$price1)))==-2)+1
-plot(EURUSD$time[maxEURUSD], EURUSD$price1[maxEURUSD], type = 'l', col = 'black', xlab = "Maxima", ylab = "EXCH")
-par(new=TRUE)
-plot(EURPLN$time[maxEURPLN], EURPLN$price1[maxEURPLN], type = 'l', col = 'blue', xlab = "Maxima", ylab = "EXCH")
-par(new=TRUE)
-plot(USDPLN$time[maxUSDPLN], USDPLN$price1[maxUSDPLN], type = 'l', col = 'red', xlab = "Maxima", ylab = "EXCH")
-
 # Niewięcej transakcji niz maximów
 if (2*length(maxEURUSD) < N){
 	N = as.integer(length(maxEURUSD)/2)
@@ -208,18 +199,18 @@ pB <- 0.5
 pE <- 0.5
 pEX <- 0.1
 min <-  1
-max <- length(maxEURPLN)
+max <- length(prices$time)
 popSize <- 10
 maxiter <- 1000
 pmutation <- 0.9
 pcrossover <- 0
 ga(type = "real-valued", 
-   fitness = function (invest) -1*evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1),
+   fitness = function (invest) -1*evaluate(invest, K, prices),
    min = 0,
    max = Inf, #może trzeba zmienić na jakieś rep(Inf, N)
    popSize = popSize,
    maxiter = maxiter,
    population = function(ga) basePopulation(ga), 
-   mutation = function(ga, invest) invest_mutation(ga, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN),
+   mutation = function(ga, invest) invest_mutation(ga, invest, pB, pE, pEX, min, max, prices),
    pmutation = pmutation, 
    pcrossover = pcrossover)
