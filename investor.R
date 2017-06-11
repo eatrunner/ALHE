@@ -2,8 +2,7 @@ library(dplyr)
 library(readr)
 library(GA)
 
-evaluate <- function(invest, K, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
-{
+evaluate <- function(invest, K, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN){
 	for(i in 1:length(invest$B))
 	{
 	  K = K + K*switch(
@@ -16,8 +15,7 @@ evaluate <- function(invest, K, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, pr
 	}
 	return(K)
 }
-invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
-{
+invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN){
   sd1 = 10
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
@@ -134,16 +132,13 @@ par(new=TRUE)
 plot(USDPLN$time[maxUSDPLN], USDPLN$price1[maxUSDPLN], type = 'l', col = 'red', xlab = "Maxima", ylab = "EXCH")
 
 # Niewięcej transakcji niz maximów
-if (2*length(maxEURUSD) < N)
-{
+if (2*length(maxEURUSD) < N){
 	N = as.integer(length(maxEURUSD)/2)
 }
-if (2*length(maxEURPLN) < N)
-{
+if (2*length(maxEURPLN) < N){
   N = as.integer(length(maxEURPLN)/2)
 }
-if (2*length(maxUSDPLN) < N)
-{
+if (2*length(maxUSDPLN) < N){
   N = as.integer(length(maxUSDPLN)/2)
 }
 
@@ -161,8 +156,7 @@ for(i in 1:30){
   invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(maxEURPLN), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
 }
 plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
-par(new=TRUE)
-plot(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH")
+points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
 
 
 print(evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
@@ -176,15 +170,17 @@ pE <- 0.5
 pEX <- 0.1
 min <-  1
 max <- length(maxEURPLN)
-
+popSize <- 10
+maxiter <- 1000
+pmutation <- 0.9
+pcrossover <- 0
 ga(type = "real-valued", 
    fitness = function (invest) -1*evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1),
-   min = rep(0, 28 * 28),
-   max = rep(1, 28 * 28),
+   min = 0,
+   max = Inf, #może trzeba zmienić na jakieś rep(Inf, N)
    popSize = popSize,
    maxiter = maxiter,
-   population = function(ga)
-     basePopulation(ga), 
-   mutation = function(ga, invest) invest_mutation(ga , invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN),
+   population = function(ga) basePopulation(ga), 
+   mutation = function(ga, invest) invest_mutation(ga, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN),
    pmutation = pmutation, 
    pcrossover = pcrossover)
