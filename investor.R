@@ -185,10 +185,10 @@ prices <- load.data()
 }
 
 
-N <- 100
-K <- 50
+trans.number <- 35
+K <- 100
 ticks.number <- nrow(prices)
-trans.number <- N
+#trans.number <- N
 
 pB <- 0.5
 pE <- 0.5
