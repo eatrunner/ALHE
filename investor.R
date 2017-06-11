@@ -194,10 +194,13 @@ points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak
 
 print(evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
 
-basePopulation <- function(ga) {
-  N <- ga@popSize
-  sample()
-  # TODO jak to zrobić
+
+basePopulation <- function(ga , nrows, transnumber) {
+  N <- 10 #ga@popSize
+  pos <- tibble( i = 1:(2*transnumber) ,p = sort(sample(1:nrows,size = 2 * transnumber)))
+  p <- pos %>% filter(i %% 2 == 1)
+  k <- pos %>% filter(i %% 2 == 0)
+  data.frame(B = p$p, E = k$p, EX = sample(1:3,transnumber,replace = TRUE))
 }
 
 pB <- 0.5
