@@ -2,20 +2,20 @@ library(dplyr)
 library(readr)
 library(GA)
 
-evaluate <- function(invest, K, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN){
+evaluate <- function(invest, K, prices){
 	for(i in 1:length(invest$B))
 	{
 	  K = K + K*switch(
 	    invest$EX[i],
-	    abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
-	    abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
-	    abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
+	    abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]]),
+	    abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
+	    abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
 	  )
 	  
 	}
 	return(K)
 }
-invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN){
+invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, prices){
   sd1 = 10
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
@@ -44,15 +44,15 @@ invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD,
     {
       val1 <- switch(
         invest$EX[i-1],
-        abs(priceEURUSD[maxEURUSD[invest$E[i-1]]] - priceEURUSD[maxEURUSD[invest$B[i-1]]]),
-        abs(priceEURPLN[maxEURPLN[invest$E[i-1]]] - priceEURPLN[maxEURPLN[invest$B[i-1]]]),
-        abs(priceUSDPLN[maxUSDPLN[invest$E[i-1]]] - priceUSDPLN[maxUSDPLN[invest$B[i-1]]])
+        abs(prices$EURUSD[invest$E[i-1]] - prices$EURUSD[invest$B[i-1]]),
+        abs(prices$EURPLN[invest$E[i-1]] - prices$EURPLN[invest$B[i-1]]),
+        abs(prices$USDPLN[invest$E[i-1]] - prices$USDPLN[invest$B[i-1]])
       )
       val2 <- switch(
         invest$EX[i],
-        abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
-        abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
-        abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
+        abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]]),
+        abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
+        abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
       )
       if (val1 > val2)
       {
@@ -66,15 +66,15 @@ invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD,
     {
       val1 <- switch(
         invest$EX[i],
-        abs(priceEURUSD[maxEURUSD[invest$E[i]]] - priceEURUSD[maxEURUSD[invest$B[i]]]),
-        abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
-        abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
+        abs(prices$EURUSD[invest$E[i]] - prices$EURUSD[invest$B[i]]),
+        abs(prices$EURPLN[invest$E[i]] - prices$EURPLN[invest$B[i]]),
+        abs(prices$USDPLN[invest$E[i]] - prices$USDPLN[invest$B[i]])
       )
       val2 <- switch(
         invest$EX[i+1],
-        abs(priceEURUSD[maxEURUSD[invest$E[i+1]]] - priceEURUSD[maxEURUSD[invest$B[i+1]]]),
-        abs(priceEURPLN[maxEURPLN[invest$E[i+1]]] - priceEURPLN[maxEURPLN[invest$B[i+1]]]),
-        abs(priceUSDPLN[maxUSDPLN[invest$E[i+1]]] - priceUSDPLN[maxUSDPLN[invest$B[i+1]]])
+        abs(prices$EURUSD[invest$E[i+1]] - prices$EURUSD[invest$B[i+1]]),
+        abs(prices$EURPLN[invest$E[i+1]] - prices$EURPLN[invest$B[i+1]]),
+        abs(prices$USDPLN[invest$E[i+1]] - prices$USDPLN[invest$B[i+1]])
       )
       if (val1 < val2)
       {
@@ -182,16 +182,16 @@ invest <- data.frame(
   )
 
 
-print(evaluate(invest, K,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
+print(evaluate(invest, K,prices))
 
 for(i in 1:30){
-  invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(maxEURPLN), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
+  invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(prices$time), prices)
 }
 plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
 points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
 
 
-print(evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
+print(evaluate(invest, K, prices))
 
 basePopulation <- function(ga) {
   N <- ga@popSize
