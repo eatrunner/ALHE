@@ -194,18 +194,19 @@ generate.invidual <- function(ticks.number, trans.number) {
 }
 
 basePopulation <- function(ga , ticks.number, trans.number) {
-  N <-  ga@popSize
+  N <- 10#ga@popSize
   
-  bp <- replicate(N,  generate.invidual(ticks.number,trans.number),simplify = FALSE)
+  bp <- lapply(1:N , function(i)generate.invidual(ticks.number,trans.number))
+  #ambp <- as.matrix(bp,ncol=1,nrow=N)
   return(bp)
 }
 
-bp <- basePopulation(NULL,ticks.number,N)
-#evaluate(bp[,2],K,prices)
+bp <- basePopulation(NULL,ticks.number,trans.number)
+
 ga(type = "real-valued", 
    fitness = function (invest) -1*evaluate(invest, K, prices),
-   min = 0,
-   max = Inf, #może trzeba zmienić na jakieś rep(Inf, N)
+   min = c(0,0,0),
+   max = c(Inf,Inf,Inf), #może trzeba zmienić na jakieś rep(Inf, N)
    popSize = popSize,
    maxiter = maxiter,
    population = function(ga) basePopulation(ga, ticks.number, N), 
