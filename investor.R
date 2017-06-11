@@ -2,7 +2,7 @@ library(dplyr)
 library(readr)
 library(GA)
 
-evaluate <- function(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
+evaluate <- function(invest, K, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
 {
 	for(i in 1:length(invest$B))
 	{
@@ -12,10 +12,11 @@ evaluate <- function(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, pr
 	    abs(priceEURPLN[maxEURPLN[invest$E[i]]] - priceEURPLN[maxEURPLN[invest$B[i]]]),
 	    abs(priceUSDPLN[maxUSDPLN[invest$E[i]]] - priceUSDPLN[maxUSDPLN[invest$B[i]]])
 	  )
+	  
 	}
 	return(K)
 }
-mutation <- function(invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
+invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN)
 {
   sd1 = 10
   sd2 = 1
@@ -154,16 +155,36 @@ invest <- data.frame(
   )
 
 
-print(evaluate(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
+print(evaluate(invest, K,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
 
-for(i in 1:30)
-{
-  invest <- mutation(invest, 0.5, 0.5, 0.1, 1, length(maxEURPLN), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
+for(i in 1:30){
+  invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(maxEURPLN), maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1)
 }
 plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
 par(new=TRUE)
 plot(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH")
 
 
-print(evaluate(K, invest, maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
+print(evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
 
+basePopulation <- function(ga) {
+  
+}
+
+pB <- 0.5
+pE <- 0.5
+pEX <- 0.1
+min <-  1
+max <- length(maxEURPLN)
+
+ga(type = "real-valued", 
+   fitness = function (invest) -1*evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1),
+   min = rep(0, 28 * 28),
+   max = rep(1, 28 * 28),
+   popSize = popSize,
+   maxiter = maxiter,
+   population = function(ga)
+     basePopulation(ga), 
+   mutation = function(ga, invest) invest_mutation(ga , invest, pB, pE, pEX, min, max, maxEURUSD, maxEURPLN, maxUSDPLN, priceEURUSD, priceEURPLN, priceUSDPLN),
+   pmutation = pmutation, 
+   pcrossover = pcrossover)
