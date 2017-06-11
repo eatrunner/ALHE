@@ -19,12 +19,28 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B)){
     if(runif(1) < pB){
-      while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) > max || tmp < min || tmp >= invest$E[i]){next}
-      invest$B[i] = tmp
+      while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) >= invest$E[i]){next}
+      if(tmp < min)
+      {
+      invest$B[i] = min
+      }else if(tmp >max)
+      {
+        invest$B[i] = max
+      }else{
+        invest$B[i] = tmp
+      }
     }
     if(runif(1) < pE) {
-      while( (tmp = as.integer(rnorm(1, invest$E[i], sd1))) > max || tmp  < min || tmp <= invest$B[i]){next}
-      invest$E[i] = tmp
+      while( (tmp = as.integer(rnorm(1, invest$E[i], sd1)))  <= invest$B[i]){next}
+      if(tmp < min)
+      {
+        invest$E[i] = min
+      }else if(tmp >max)
+      {
+        invest$E[i] = max
+      }else{
+        invest$E[i] = tmp
+      }
     }
     if(runif(1) < pEX){
       while( (tmp = as.integer(rnorm(1, invest$EX[i], sd2))) > 3 || tmp < 1 ){next}
@@ -208,7 +224,9 @@ pE <- 0.5
 pEX <- 0.1
 min <-  1
 max <- length(prices$time)
+
 popSize <- 10
+
 maxiter <- 1000
 pmutation <- 0.9
 
