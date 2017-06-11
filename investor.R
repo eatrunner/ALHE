@@ -15,7 +15,7 @@ evaluate <- function(invest, K, prices){
 	}
 	return(K)
 }
-
+invest = pop[[2]]
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   sd1 = 10
   sd2 = 1
@@ -82,9 +82,9 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
       {
         invest$E[i] = invest$B[i+1];
       }
-      i
     }
   }
+  
   return (invest)
 }
 
@@ -92,7 +92,7 @@ select.one.of.two <- function(population,K,prices) {
   ind <- sample(1:length(population),2)
   f1 <- evaluate(population[[ind[1]]],K,prices)
   f2 <- evaluate(population[[ind[2]]],K,prices)
-  ifelse(f1 > f2, population[ind[[1]]],population[[ind[2]]])[[1]]
+  ifelse(f1 > f2, population[ind[1]],population[ind[2]])[[1]]
 }
 invests.selection1 <- function(population,K,prices){
   lapply(1:length(population), function(i) select.one.of.two(population,K,prices))
@@ -170,7 +170,7 @@ load.data <- function() {
     mutate(EURUSD = replace.na(EURUSD))
   return(prices)
 }
-prices <- load.data()
+#prices <- load.data()
 
 {
 #plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
@@ -211,29 +211,23 @@ maxiter <- 10
 pmutation <- 0.9
 
 #wlasciwa petla ewolucji
-selection <- select.one.of.two
+selection <- invests.selection1
 pop <- basePopulation(ticks.number,trans.number,popSize)
 
 invest <- pop[[1]]
 
 for(i in 1:maxiter){
   pop <- selection(pop,K,prices)
-  #mutacja
-  for(j in 1:popSize)
-  {
-    pop[j]<-invest_mutation(pop[j], pB, pE, pEX, min, max,prices)
-  }
+  pop <- lapply(1:popSize , function(j)invest_mutation(pop[[j]], pB, pE, pEX, min, max,prices))
 }
 
 #wybor najlepszego
-best <- pop[1]
-bestVal<- evaluate(K, best, prices)
-for(i in 2:popSize)
-{
-  if(evaluate(K, pop[i], prices) > bestVal)
-  {
-    best <- pop[i]
-    bestVal<- evaluate(K, best, prices)
+best <- pop[[1]]
+bestVal<- evaluate(best, K,prices)
+for(i in 2:popSize){
+  if(evaluate(pop[[i]], K, prices) > bestVal){
+    best <- pop[[i]]
+    bestVal<- evaluate( best,K, prices)
   }
 }
 plot(best$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
