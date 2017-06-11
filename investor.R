@@ -141,11 +141,12 @@ colnames(b) <- c("time" , "EURUSD")
 c <- EURPLN[,1:2]
 colnames(c) <- c("time" , "EURPLN") 
 
-ab <- full_join(a,b,by = "time")
-abc <- full_join(ab,c,by="time")
-prices <- abc %>% arrange(time)
-prices <- prices %>% mutate( USDPLN = replace.na(USDPLN)) %>% mutate(EURPLN = replace.na(EURPLN)) %>% mutate(EURUSD = replace.na(EURUSD))
-
+prices <- a %>% full_join(b,by = "time") %>% 
+  full_join(c,by="time") %>% 
+  arrange(time) %>% 
+  mutate( USDPLN = replace.na(USDPLN)) %>% 
+  mutate(EURPLN = replace.na(EURPLN)) %>% 
+  mutate(EURUSD = replace.na(EURUSD))
 
 
 plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
