@@ -221,14 +221,9 @@ for(i in 1:maxiter){
 }
 
 #wybor najlepszego
-best <- pop[[1]]
-bestVal<- evaluate(best, K,prices)
-for(i in 2:popSize){
-  if(evaluate(pop[[i]], K, prices) > bestVal){
-    best <- pop[[i]]
-    bestVal<- evaluate( best,K, prices)
-  }
-}
+
+best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
+
 plot(best$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
 points(best$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
 print(bestVal)
