@@ -115,6 +115,38 @@ colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
 USDPLN <- USDPLN %>% mutate( time = as.POSIXct(paste(date,time,sep = " ")))
 USDPLN$date <- NULL
 
+replace.na <- function(dat) {
+  N <- length(dat)
+  na.pos <- which(is.na(dat))
+  if (length(na.pos) %in% c(0, N)) {
+    return(dat)
+  }
+  non.na.pos <- which(!is.na(dat))
+  intervals  <- findInterval(na.pos, non.na.pos,
+                             all.inside = TRUE)
+  left.pos   <- non.na.pos[pmax(1, intervals)]
+  right.pos  <- non.na.pos[pmin(N, intervals+1)]
+  left.dist  <- na.pos - left.pos
+  right.dist <- right.pos - na.pos
+  
+  dat[na.pos] <- ifelse(left.dist <= right.dist,
+                        dat[left.pos], dat[right.pos])
+  return(dat)
+}
+
+a <- USDPLN[,1:2]
+colnames(a) <- c("time" , "USDPLN") 
+b <- EURUSD[,1:2]
+colnames(b) <- c("time" , "EURUSD") 
+c <- EURPLN[,1:2]
+colnames(c) <- c("time" , "EURPLN") 
+
+ab <- full_join(a,b,by = "time")
+abc <- full_join(ab,c,by="time")
+prices <- abc %>% arrange(time)
+prices <- prices %>% mutate( USDPLN = f1(USDPLN)) %>% mutate(EURPLN = f1(EURPLN)) %>% mutate(EURUSD = f1(EURUSD))
+
+
 
 plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
 par(new=TRUE)
@@ -162,7 +194,9 @@ points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak
 print(evaluate(invest, K ,maxEURUSD, maxEURPLN, maxUSDPLN, EURUSD$price1, EURPLN$price1, USDPLN$price1))
 
 basePopulation <- function(ga) {
-  
+  N <- ga@popSize
+  sample()
+  # TODO jak to zrobić
 }
 
 pB <- 0.5
