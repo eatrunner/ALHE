@@ -144,7 +144,7 @@ colnames(c) <- c("time" , "EURPLN")
 ab <- full_join(a,b,by = "time")
 abc <- full_join(ab,c,by="time")
 prices <- abc %>% arrange(time)
-prices <- prices %>% mutate( USDPLN = f1(USDPLN)) %>% mutate(EURPLN = f1(EURPLN)) %>% mutate(EURUSD = f1(EURUSD))
+prices <- prices %>% mutate( USDPLN = replace.na(USDPLN)) %>% mutate(EURPLN = replace.na(EURPLN)) %>% mutate(EURUSD = replace.na(EURUSD))
 
 
 
