@@ -15,13 +15,12 @@ evaluate <- function(invest, K, prices){
 	}
 	return(K)
 }
+
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   sd1 = 10
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
-  for(i in 1:length(invest$B))
-  {
-    i
+  for(i in 1:length(invest$B)){
     if(runif(1) < pB)
     {
       while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) > max || tmp < min || tmp >= invest$E[i]){next}
@@ -99,6 +98,18 @@ invests.selection1 <- function(population,K,prices){
   lapply(1:length(population), function(i) select.one.of.two(population,K,prices))
 }
 
+generate.invidual <- function(ticks.number, trans.number) {
+  pos <- tibble( i = 1:(2*trans.number) ,p = sort(sample(1:ticks.number,size = 2 * trans.number)))
+  p <- pos %>% filter(i %% 2 == 1)
+  k <- pos %>% filter(i %% 2 == 0)
+  data.frame(B = p$p, E = k$p, EX = sample(1:3,trans.number,replace = TRUE))
+}
+basePopulation <- function(ticks.number, trans.number,pop.size) {
+  N <- pop.size
+  bp <- lapply(1:N , function(i) generate.invidual(ticks.number,trans.number))
+  return(bp)
+}
+
 replace.na <- function(dat) {
   N <- length(dat)
   na.pos <- which(is.na(dat))
@@ -118,71 +129,77 @@ replace.na <- function(dat) {
   return(dat)
 }
 
-N <- 100
-K <- 100
 
-EURPLN <- read_csv("DAT_MT_EURPLN_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(EURPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-EURPLN <- EURPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
-EURPLN$date <- NULL
+load.data <- function() {
+  EURPLN <- read_csv("DAT_MT_EURPLN_M1_2016.csv", 
+                     col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                         X2 = col_time(format = "%H:%M"), 
+                                                         X7 = col_skip()))
+  colnames(EURPLN) <- c("date", "time", "price1", "price2", "price3","price4")
+  EURPLN <- EURPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
+  EURPLN$date <- NULL
+  
+  EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv", 
+                     col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                         X2 = col_time(format = "%H:%M"), 
+                                                         X7 = col_skip()))
+  colnames(EURUSD) <- c("date", "time", "price1", "price2", "price3","price4")
+  EURUSD <- EURUSD %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
+  EURUSD$date <- NULL
+  
+  USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv", 
+                     col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                         X2 = col_time(format = "%H:%M"), 
+                                                         X7 = col_skip()))
+  colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
+  USDPLN <- USDPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
+  USDPLN$date <- NULL
+  
+  a <- USDPLN[,1:2]
+  colnames(a) <- c("time" , "USDPLN") 
+  b <- EURUSD[,1:2]
+  colnames(b) <- c("time" , "EURUSD") 
+  c <- EURPLN[,1:2]
+  colnames(c) <- c("time" , "EURPLN") 
+  
+  prices <- a %>% full_join(b,by = "time") %>% 
+    full_join(c,by="time") %>% 
+    arrange(time) %>% 
+    mutate( USDPLN = replace.na(USDPLN)) %>% 
+    mutate(EURPLN = replace.na(EURPLN)) %>% 
+    mutate(EURUSD = replace.na(EURUSD))
+  return(prices)
+}
+prices <- load.data()
 
-EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(EURUSD) <- c("date", "time", "price1", "price2", "price3","price4")
-EURUSD <- EURUSD %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
-EURUSD$date <- NULL
+{
+#plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
+#par(new=TRUE)
+#plot(EURPLN$time, EURPLN$price1, type = 'l', col = 'blue', xlab = "Time", ylab = "EXCH")
+#par(new=TRUE)
+#plot(USDPLN$time, USDPLN$price1, type = 'l', col = 'red', xlab = "Time", ylab = "EXCH")
 
-USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-USDPLN <- USDPLN %>% mutate( time = as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S"))
-USDPLN$date <- NULL
+#invest <- data.frame(
+#  B = seq(1, 50*N, 50),
+#  E = seq(6, 50*N + 5, 50),
+#  EX = rep(1, N)
+#  )
+#print(evaluate(invest, K,prices))
 
-a <- USDPLN[,1:2]
-colnames(a) <- c("time" , "USDPLN") 
-b <- EURUSD[,1:2]
-colnames(b) <- c("time" , "EURUSD") 
-c <- EURPLN[,1:2]
-colnames(c) <- c("time" , "EURPLN") 
-
-prices <- a %>% full_join(b,by = "time") %>% 
-  full_join(c,by="time") %>% 
-  arrange(time) %>% 
-  mutate( USDPLN = replace.na(USDPLN)) %>% 
-  mutate(EURPLN = replace.na(EURPLN)) %>% 
-  mutate(EURUSD = replace.na(EURUSD))
-
-
-plot(EURUSD$time, EURUSD$price1,type = 'l', col = 'black', xlab = "Time", ylab = "EXCH")
-par(new=TRUE)
-plot(EURPLN$time, EURPLN$price1, type = 'l', col = 'blue', xlab = "Time", ylab = "EXCH")
-par(new=TRUE)
-plot(USDPLN$time, USDPLN$price1, type = 'l', col = 'red', xlab = "Time", ylab = "EXCH")
-
-invest <- data.frame(
-  B = seq(1, 50*N, 50),
-  E = seq(6, 50*N + 5, 50),
-  EX = rep(1, N)
-  )
-
-
-print(evaluate(invest, K,prices))
-
-for(i in 1:30){
+#for(i in 1:30){
   invest <- invest_mutation(NULL , invest, 0.5, 0.5, 0.1, 1, length(prices$time), prices)
 }
-plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
-points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
+{
+#plot(invest$B, type = 'p', col = 'red', xlab = "Maxima", ylab = "EXCH")
+#points(invest$E, type = 'p', col = 'blue', xlab = "Maxima", ylab = "EXCH") # tak robimy wykres na wykresie :)
+#print(evaluate(invest, K, prices))
+}
 
 
-print(evaluate(invest, K, prices))
+N <- 100
+K <- 100
+ticks.number <- nrow(prices)
+trans.number <- N
 
 pB <- 0.5
 pE <- 0.5
@@ -190,36 +207,21 @@ pEX <- 0.1
 min <-  1
 max <- length(prices$time)
 popSize <- 10
-maxiter <- 1000
+maxiter <- 10
 pmutation <- 0.9
-pcrossover <- 0
-ticks.number <- nrow(prices)
-trans.number <- N
 
-generate.invidual <- function(ticks.number, trans.number) {
-  pos <- tibble( i = 1:(2*trans.number) ,p = sort(sample(1:ticks.number,size = 2 * trans.number)))
-  p <- pos %>% filter(i %% 2 == 1)
-  k <- pos %>% filter(i %% 2 == 0)
-  data.frame(B = p$p, E = k$p, EX = sample(1:3,trans.number,replace = TRUE))
-}
-
-basePopulation <- function(ticks.number, trans.number,pop.size) {
-  N <- pop.Size
-  bp <- lapply(1:N , function(i) generate.invidual(ticks.number,trans.number))
-  return(bp)
-}
-
-bp <- basePopulation(ticks.number,trans.number)
-
-pop <- bp
 #wlasciwa petla ewolucji
-for(i in 1:maxiter)
-{
-  pop <- selection(pop)
+selection <- select.one.of.two
+pop <- basePopulation(ticks.number,trans.number,popSize)
+
+invest <- pop[[1]]
+
+for(i in 1:maxiter){
+  pop <- selection(pop,K,prices)
   #mutacja
   for(j in 1:popSize)
   {
-    pop[j]<-mutation(pop[j], pB, pE, pEX, min, max,prices)
+    pop[j]<-invest_mutation(pop[j], pB, pE, pEX, min, max,prices)
   }
 }
 
