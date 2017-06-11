@@ -88,32 +88,6 @@ invest_mutation <- function(ga = NULL, invest, pB, pE, pEX, min, max, prices){
   }
   return (invest)
 }
-N <- 100
-K <- 100
-
-EURPLN <- read_csv("DAT_MT_EURPLN_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(EURPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-EURPLN <- EURPLN %>% mutate( time = as.POSIXct(paste(date,time,sep = " ")))
-EURPLN$date <- NULL
-
-EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(EURUSD) <- c("date", "time", "price1", "price2", "price3","price4")
-EURUSD <- EURUSD %>% mutate( time = as.POSIXct(paste(date,time,sep = " ")))
-EURUSD$date <- NULL
-
-USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv", 
-                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
-                                                       X2 = col_time(format = "%H:%M"), 
-                                                       X7 = col_skip()))
-colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
-USDPLN <- USDPLN %>% mutate( time = as.POSIXct(paste(date,time,sep = " ")))
-USDPLN$date <- NULL
 
 replace.na <- function(dat) {
   N <- length(dat)
@@ -133,6 +107,33 @@ replace.na <- function(dat) {
                         dat[left.pos], dat[right.pos])
   return(dat)
 }
+
+N <- 100
+K <- 100
+
+EURPLN <- read_csv("DAT_MT_EURPLN_M1_2016.csv", 
+                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                       X2 = col_time(format = "%H:%M"), 
+                                                       X7 = col_skip()))
+colnames(EURPLN) <- c("date", "time", "price1", "price2", "price3","price4")
+EURPLN <- EURPLN %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+EURPLN$date <- NULL
+
+EURUSD <- read_csv("DAT_MT_EURUSD_M1_2016.csv", 
+                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                       X2 = col_time(format = "%H:%M"), 
+                                                       X7 = col_skip()))
+colnames(EURUSD) <- c("date", "time", "price1", "price2", "price3","price4")
+EURUSD <- EURUSD %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+EURUSD$date <- NULL
+
+USDPLN <- read_csv("DAT_MT_USDPLN_M1_2016.csv", 
+                   col_names = FALSE, col_types = cols(X1 = col_date(format = "%Y.%m.%d"), 
+                                                       X2 = col_time(format = "%H:%M"), 
+                                                       X7 = col_skip()))
+colnames(USDPLN) <- c("date", "time", "price1", "price2", "price3","price4")
+USDPLN <- USDPLN %>% mutate( time = as.POSIXct(strptime(paste(date,time,sep = " "),"%Y.%m.%d %H:%M")))
+USDPLN$date <- NULL
 
 a <- USDPLN[,1:2]
 colnames(a) <- c("time" , "USDPLN") 
@@ -201,7 +202,6 @@ basePopulation <- function(ga , nrows, transnumber) {
   p <- pos %>% filter(i %% 2 == 1)
   k <- pos %>% filter(i %% 2 == 0)
   data.frame(B = p$p, E = k$p, EX = sample(1:3,transnumber,replace = TRUE))
-  
 }
 
 pB <- 0.5
