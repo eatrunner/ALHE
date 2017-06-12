@@ -14,7 +14,7 @@ evaluate <- function(invest, K, prices){
 	return(K)
 }
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
-  sd1 = 500
+  sd1 = 1000
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B)){
@@ -222,26 +222,26 @@ ticks.number <- nrow(prices)
 pB <- 0.5
 pE <- 0.5
 pEX <- 0.1
+popSize <- 10
+maxiter <- 1000
+
 min <-  1
 max <- length(prices$time)
 
-popSize <- 10
 
-maxiter <- 1000
 pmutation <- 0.9
 
 #wlasciwa petla ewolucji
 selection <- invests.selection2
 
 
-invest <- pop[[1]]
 mval <- 0
 pop <- basePopulation(ticks.number,trans.number,popSize)
 for(i in 1:maxiter){
   pop <- selection(pop,K,prices)
   best.prv <- pop[[10]]
   pop <- lapply(1:(popSize - 1) , function(j)invest_mutation(pop[[j]], pB, pE, pEX, min, max,prices))
-  pop[[10]] <- best.prv
+  pop[[popSize]] <- best.prv
   mval[i] <- max(sapply(1:popSize,function(j) evaluate(pop[[j]],K,prices)))
   #best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
   print(i)
