@@ -19,7 +19,7 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B)){
     if(runif(1) < pB){
-      if(tmp = as.integer(rnorm(1, invest$B[i], sd1)) >= invest$E[i])
+      if((tmp <- as.integer(rnorm(1, invest$B[i], sd1))) >= invest$E[i])
       {
         invest$B[i] = invest$E[i]
       }else if(tmp < min)
@@ -226,7 +226,7 @@ ticks.number <- nrow(prices)
 pB <- 0.5
 pE <- 0.5
 pEX <- 0.1
-popSize <- 100
+popSize <- 10
 maxiter <- 1000
 
 min <-  1
