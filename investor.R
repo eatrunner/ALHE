@@ -14,13 +14,15 @@ evaluate <- function(invest, K, prices){
 	return(K)
 }
 invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
-  sd1 = 1000
+  sd1 = 500
   sd2 = 1
   #losowanie nowych wartosci. Jezeli jest bledna wartosc losujemy dalej.
   for(i in 1:length(invest$B)){
     if(runif(1) < pB){
-      while( (tmp = as.integer(rnorm(1, invest$B[i], sd1))) >= invest$E[i]){next}
-      if(tmp < min)
+      if(tmp = as.integer(rnorm(1, invest$B[i], sd1)) >= invest$E[i])
+      {
+        invest$B[i] = invest$E[i]
+      }else if(tmp < min)
       {
       invest$B[i] = min
       }else if(tmp >max)
@@ -31,8 +33,10 @@ invest_mutation <- function(invest, pB, pE, pEX, min, max, prices){
       }
     }
     if(runif(1) < pE) {
-      while( (tmp = as.integer(rnorm(1, invest$E[i], sd1)))  <= invest$B[i]){next}
-      if(tmp < min)
+      if((tmp = as.integer(rnorm(1, invest$E[i], sd1)))  <= invest$B[i])
+      {
+        invest$E[i] = invest$B[i]
+      }else if(tmp < min)
       {
         invest$E[i] = min
       }else if(tmp >max)
@@ -222,7 +226,7 @@ ticks.number <- nrow(prices)
 pB <- 0.5
 pE <- 0.5
 pEX <- 0.1
-popSize <- 10
+popSize <- 100
 maxiter <- 1000
 
 min <-  1
@@ -245,7 +249,7 @@ for(i in 1:maxiter){
   mval[i] <- max(sapply(1:popSize,function(j) evaluate(pop[[j]],K,prices)))
   #best <- pop[[which.max(sapply(1:popSize,function(i) evaluate(pop[[i]],K,prices)))]]
   print(i)
-  if(i%%50==0) plot(mval, xlab="Iteracja",ylab="Stan konta u najlepszego osobnika",col="royalblue1",pch=16)
+  if(i%%100==0) plot(mval, xlab="Iteracja",ylab="Stan konta u najlepszego osobnika",col="royalblue1",pch=16)
 }
 plot(mval, xlab="Iteracja",ylab="Stan konta u najlepszego osobnika",col="royalblue1",pch=16)
 
